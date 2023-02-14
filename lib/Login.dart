@@ -20,8 +20,11 @@ class _loginState extends State<login> {
     super.dispose();
   }
 
-  bool isEmailCorrect = false;
-  final _formKey = GlobalKey<FormState>();
+  final _formEmailKey = GlobalKey<FormState>();
+  final _formSenhaKey = GlobalKey<FormState>();
+  double tamanhoErros = 0;
+  double containerPrincipal = 260;
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +62,7 @@ class _loginState extends State<login> {
                     height: 30,
                   ),
                   Container(
-                    height: 260,
+                    height: containerPrincipal,
                     width: getSistemaOperacional() == "Mobile" ? MediaQuery.of(context).size.width / 1.1 : 600,
                     decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.3),
@@ -68,28 +71,34 @@ class _loginState extends State<login> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 20),
-                          child: TextFormField(
+                          child: Form(
+                              key: _formEmailKey,
+                              child:TextFormField(
                             controller: _textEditingController,
                             onChanged: (val) {
                               setState(() {
                              //  isEmailCorrect = isEmail(val);
                               });
                             },
-
                             decoration: decorarionPadrao("Email", Icons.email_outlined, hint: "seu@email.com.br"),
+                            validator: (value) {
+                              if (value!.isEmpty)  return 'Campo obrigatório.';
+                              if(!isEmail(value)) return 'Email inválido.';
+                            },
+                          )
                           ),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 20, right: 20),
                           child: Form(
-                            key: _formKey,
+                            key: _formSenhaKey,
                             child: TextFormField(
                               obscuringCharacter: '*',
                               obscureText: true,
                               decoration: decorarionPadrao("Senha", Icons.lock_outline, hint: "*********"),
                               validator: (value) {
-                                if (value!.isEmpty && value.length < 5) {
-                                  return 'Senha não atende aos requisitos';
+                                if (value!.isEmpty) {
+                                  return 'Campo obrigatório.';
                                 }
                               },
                             ),
@@ -127,7 +136,20 @@ class _loginState extends State<login> {
                                 padding: const EdgeInsets.symmetric( horizontal: 131, vertical: 20)
                             ),
                             onPressed: () {
-                              if (_formKey.currentState!.validate()) {
+
+                              tamanhoErros = 0;
+                              if(!_formEmailKey.currentState!.validate()) tamanhoErros += 22;
+                              if(!_formSenhaKey.currentState!.validate()) tamanhoErros += 22;
+
+                              if(tamanhoErros > 0){
+                                setState(() {
+                                  containerPrincipal = 260 + tamanhoErros;
+                                });
+                              }
+
+                              if (_formSenhaKey.currentState!.validate() &&
+                                  _formEmailKey.currentState!.validate()
+                                 ) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text('Processando')),

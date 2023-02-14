@@ -19,8 +19,8 @@ class _lembrarSenhaState extends State<lembrarSenha> {
     super.dispose();
   }
 
-  bool isEmailCorrect = false;
-  final _formKey = GlobalKey<FormState>();
+  final _formEmailKey = GlobalKey<FormState>();
+  double containerPrincipal = 160;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class _lembrarSenhaState extends State<lembrarSenha> {
                     height: 30,
                   ),
                   Container(
-                    height: 160,
+                    height: containerPrincipal,
                     width: getSistemaOperacional() == "Mobile" ? MediaQuery.of(context).size.width / 1.1 : 600,
                     decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.3),
@@ -68,14 +68,23 @@ class _lembrarSenhaState extends State<lembrarSenha> {
                         Padding(
                           padding: const EdgeInsets.only(
                               left: 20, right: 20, bottom: 20, top: 20),
-                          child: TextFormField(
-                            controller: _textEditingController,
-                            onChanged: (val) {
-                              setState(() {
-                              // isEmailCorrect = isEmail(val);
-                              });
-                            },
-                            decoration: decorarionPadrao("Email", Icons.email_outlined, hint: "seu@email.com.br"),
+                          child: Form(
+                            key: _formEmailKey,
+                              child:TextFormField(
+                              controller: _textEditingController,
+                              onChanged: (val) {
+                                setState(() {
+                                // isEmailCorrect = isEmail(val);
+                                });
+                              },
+                              decoration: decorarionPadrao("Email", Icons.email_outlined, hint: "seu@email.com.br"),
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  if (value.isEmpty)  return 'Campo obrigatório.';
+                                  if(!isEmail(value)) return 'Email inválido.';
+                                }
+                              },
+                            )
                           ),
                         ),
                         ElevatedButton(
@@ -89,7 +98,13 @@ class _lembrarSenhaState extends State<lembrarSenha> {
                               //     left: 120, right: 120, top: 20, bottom: 20),
                             ),
                             onPressed: () {
-                              if (_formKey.currentState!.validate()) {
+
+                              setState(() {
+                                containerPrincipal = !_formEmailKey.currentState!.validate() ? 185 : 160;
+                              });
+
+
+                              if (_formEmailKey.currentState!.validate()) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text('Processando')),

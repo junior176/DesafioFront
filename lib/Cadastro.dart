@@ -17,6 +17,10 @@ class _cadastroState extends State<cadastro> {
   TextEditingController _confirmaSenhaController = TextEditingController();
 
   double tamanhoErros = 0;
+  double containerPrincipal = 380;
+
+  double _forcaSenha = 0;
+
 
   @override
   void dispose() {
@@ -52,9 +56,9 @@ class _cadastroState extends State<cadastro> {
                 children: [
                   Image.asset(
                     'assets/img/logoLuizaLabs.png',
-                     height: 120,
+                    height: 120,
                     // width: 120,
-                   ),
+                  ),
                   Text(
                     'Cadastro de Usuário',
                     style: GoogleFonts.roboto(
@@ -69,7 +73,7 @@ class _cadastroState extends State<cadastro> {
                     height: 30,
                   ),
                   Container(
-                    height: 380 + tamanhoErros,
+                    height: containerPrincipal,
                     width: getSistemaOperacional() == "Mobile" ? MediaQuery.of(context).size.width / 1.1 : 600,
                     decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.3),
@@ -77,33 +81,31 @@ class _cadastroState extends State<cadastro> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 20),
+                          padding: const EdgeInsets.only(
+                              left: 20, right: 20, bottom: 20, top: 20),
                           child: Form(
                             key: _formNomeKey,
-                              child:TextFormField(
+                            child: TextFormField(
                               controller: _nomeController,
                               onChanged: (val) {
                                 setState(() {
-                                // isEmailCorrect = isEmail(val);
+                                  // isEmailCorrect = isEmail(val);
                                 });
                               },
                               validator: (value) {
-                                if (value!.isEmpty && value.length < 5) {
-                                  tamanhoErros += 20;
-                                  return 'Nome Inválido.';
-                                }else{
-                                  tamanhoErros -= 20;
-                                }
+                                if (value!.isEmpty) return 'Campo obrigatório.';
                               },
-                              decoration: decorarionPadrao("Nome", Icons.person_outline),
+                              decoration: decorarionPadrao(
+                                  "Nome*", Icons.person_outline),
                             ),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                          padding: const EdgeInsets.only(
+                              left: 20, right: 20, bottom: 20),
                           child: Form(
                             key: _formEmailKey,
-                            child:TextFormField(
+                            child: TextFormField(
                               controller: _emailController,
                               onChanged: (val) {
                                 setState(() {
@@ -111,9 +113,10 @@ class _cadastroState extends State<cadastro> {
                                 });
                               },
                               validator: (value) {
-                                if(!isEmail(value!)) return 'Email inválido.';
+                                if (value!.isEmpty) return 'Campo obrigatório.';
+                                if (!isEmail(value)) return 'Email inválido.';
                               },
-                              decoration: decorarionPadrao("Email", Icons.email_outlined, hint: "seu@email.com.br"),
+                              decoration: decorarionPadrao("Email*", Icons.email_outlined, hint: "seu@email.com.br"),
                             ),
                           ),
                         ),
@@ -122,30 +125,39 @@ class _cadastroState extends State<cadastro> {
                           child: Form(
                             key: _formSenhaKey,
                             child: TextFormField(
+                              onChanged: (value) => _checarSenha(value),
                               controller: _senhaController,
                               obscuringCharacter: '*',
                               obscureText: true,
-                              decoration: decorarionPadrao("Senha", Icons.lock_outline, hint: "*********"),
+                              decoration: decorarionPadrao("Senha*", Icons.lock_outline, hint: "*********"),
                               validator: (value) {
-                                if(!isSenha(value!)) return 'Senha deve ter ao menos um caractere especial, uma letra maiúscula e um número';
-
+                                if (!isSenha(value!)) return 'Pelo menos um caractere especial, uma letra maiúscula e um número';
                               },
                             ),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
+                            padding: const EdgeInsets.only(left: 22, right: 22),
+                            child:LinearProgressIndicator(
+                              value: _forcaSenha,
+                              backgroundColor: Colors.grey[300],
+                              color: _forcaSenha <= 1 / 4 ? Colors.red : _forcaSenha == 2 / 4  ? Colors.yellow : _forcaSenha == 3 / 4 ? Colors.blue : Colors.green,
+                              minHeight: 5,
+                            )
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20,
+                              right: 20,
+                              top: 20),
                           child: Form(
                             key: _formConfirmaSenhaKey,
                             child: TextFormField(
                               controller: _confirmaSenhaController,
                               obscuringCharacter: '*',
                               obscureText: true,
-                              decoration: decorarionPadrao("Confrmar Senha", Icons.lock_outline, hint: "*********"),
+                              decoration: decorarionPadrao("Confirmar Senha*", Icons.lock_outline, hint: "*********"),
                               validator: (value) {
-                                if (value!.isEmpty || value != _senhaController.text) {
-                                  return 'Senhas não conferem.';
-                                }
+                                if (value!.isEmpty || value != _senhaController.text) return 'Senhas não conferem.';
                               },
                             ),
                           ),
@@ -157,15 +169,29 @@ class _cadastroState extends State<cadastro> {
                                     borderRadius:
                                     BorderRadius.circular(10.0)),
                                 backgroundColor: Color(0xFF0086FF),
-                                padding: const EdgeInsets.symmetric( horizontal: 131, vertical: 20)
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 131, vertical: 20)
                               // padding: EdgeInsets.only(
                               //     left: 120, right: 120, top: 20, bottom: 20),
                             ),
                             onPressed: () {
+                              tamanhoErros = 0;
+                              if (!_formNomeKey.currentState!.validate()) tamanhoErros += 22;
+                              if (!_formEmailKey.currentState!.validate()) tamanhoErros += 22;
+                              if (!_formSenhaKey.currentState!.validate()) tamanhoErros += 22;
+                              if (!_formConfirmaSenhaKey.currentState!.validate()) tamanhoErros += 22;
+
+                              if (tamanhoErros > 0) {
+                                setState(() {
+                                  containerPrincipal = 380 + tamanhoErros;
+                                });
+                              }
+
                               if (_formNomeKey.currentState!.validate() &&
                                   _formEmailKey.currentState!.validate() &&
                                   _formSenhaKey.currentState!.validate() &&
-                                  _formConfirmaSenhaKey.currentState!.validate()) {
+                                  _formConfirmaSenhaKey.currentState!
+                                      .validate()) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text('Processando')),
@@ -211,5 +237,38 @@ class _cadastroState extends State<cadastro> {
         ),
       ),
     );
+  }
+
+  void _checarSenha(String value) {
+    String senha = value.trim();
+    RegExp numReg = RegExp(r".*[0-9].*");
+    RegExp letrasReg = RegExp(r".*[A-Za-z].*");
+    RegExp totalReg = RegExp(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$*&@#])[0-9a-zA-Z$*&@#]{8,}$');
+
+    if (senha.isEmpty) {
+      setState(() {
+        _forcaSenha = 0;
+      });
+    } else if (senha.length < 6) {
+      setState(() {
+        _forcaSenha = 1 / 4;
+      });
+    } else if (!letrasReg.hasMatch(senha) || !numReg.hasMatch(senha)) {
+      setState(() {
+        _forcaSenha = 2 / 4;
+      });
+    } else {
+      if (!totalReg.hasMatch(senha)) {
+        setState(() {
+          _forcaSenha = 3 / 4;
+        });
+      } else {
+        // Senha >= 8
+        // Contém todas as validações
+        setState(() {
+          _forcaSenha = 1;
+        });
+      }
+    }
   }
 }
