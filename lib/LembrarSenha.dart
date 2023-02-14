@@ -44,6 +44,16 @@ class _lembrarSenhaState extends State<lembrarSenha> {
                      height: 120,
                     // width: 120,
                    ),
+                  Text(
+                    'Insira seu email para recuperar a senha.',
+                    style: GoogleFonts.roboto(
+                      textStyle: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w300,
+                          // height: 1.5,
+                          fontSize: 15),
+                    ),
+                  ),
                   const SizedBox(
                     height: 30,
                   ),

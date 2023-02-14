@@ -51,3 +51,15 @@ InputDecoration decorarionPadrao(String label, IconData icone,  {String hint = "
     labelStyle: const TextStyle(color: Color(0xFF0086FF)),
   );
 }
+
+bool isEmail(String email) {
+  String p = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+  RegExp regExp = RegExp(p);
+  return regExp.hasMatch(email);
+}
+
+bool isSenha(String senha) {
+  String p = r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$*&@#])[0-9a-zA-Z$*&@#]{8,}$';
+  RegExp regExp = RegExp(p);
+  return regExp.hasMatch(senha);
+}

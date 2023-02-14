@@ -11,16 +11,27 @@ class cadastro extends StatefulWidget {
 }
 
 class _cadastroState extends State<cadastro> {
-  TextEditingController _textEditingController = TextEditingController();
+  TextEditingController _nomeController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _senhaController = TextEditingController();
+  TextEditingController _confirmaSenhaController = TextEditingController();
+
+  double tamanhoErros = 0;
 
   @override
   void dispose() {
-    _textEditingController.clear();
+    _nomeController.clear();
+    _emailController.clear();
+    _senhaController.clear();
+    _confirmaSenhaController.clear();
     super.dispose();
   }
 
   bool isEmailCorrect = false;
-  final _formKey = GlobalKey<FormState>();
+  final _formNomeKey = GlobalKey<FormState>();
+  final _formEmailKey = GlobalKey<FormState>();
+  final _formSenhaKey = GlobalKey<FormState>();
+  final _formConfirmaSenhaKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +55,21 @@ class _cadastroState extends State<cadastro> {
                      height: 120,
                     // width: 120,
                    ),
+                  Text(
+                    'Cadastro de Usuário',
+                    style: GoogleFonts.roboto(
+                      textStyle: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w300,
+                          // height: 1.5,
+                          fontSize: 15),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
                   Container(
-                    height: 380,
+                    height: 380 + tamanhoErros,
                     width: getSistemaOperacional() == "Mobile" ? MediaQuery.of(context).size.width / 1.1 : 600,
                     decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.3),
@@ -53,42 +77,58 @@ class _cadastroState extends State<cadastro> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(
-                              left: 20, right: 20, bottom: 20, top: 20),
-                          child: TextFormField(
-                            controller: _textEditingController,
-                            onChanged: (val) {
-                              setState(() {
-                              // isEmailCorrect = isEmail(val);
-                              });
-                            },
-                            decoration: decorarionPadrao("Nome", Icons.person_outline),
+                          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 20),
+                          child: Form(
+                            key: _formNomeKey,
+                              child:TextFormField(
+                              controller: _nomeController,
+                              onChanged: (val) {
+                                setState(() {
+                                // isEmailCorrect = isEmail(val);
+                                });
+                              },
+                              validator: (value) {
+                                if (value!.isEmpty && value.length < 5) {
+                                  tamanhoErros += 20;
+                                  return 'Nome Inválido.';
+                                }else{
+                                  tamanhoErros -= 20;
+                                }
+                              },
+                              decoration: decorarionPadrao("Nome", Icons.person_outline),
+                            ),
                           ),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                          child: TextFormField(
-                            controller: _textEditingController,
-                            onChanged: (val) {
-                              setState(() {
-                                // isEmailCorrect = isEmail(val);
-                              });
-                            },
-                            decoration: decorarionPadrao("Email", Icons.email_outlined, hint: "seu@email.com.br"),
+                          child: Form(
+                            key: _formEmailKey,
+                            child:TextFormField(
+                              controller: _emailController,
+                              onChanged: (val) {
+                                setState(() {
+                                  // isEmailCorrect = isEmail(val);
+                                });
+                              },
+                              validator: (value) {
+                                if(!isEmail(value!)) return 'Email inválido.';
+                              },
+                              decoration: decorarionPadrao("Email", Icons.email_outlined, hint: "seu@email.com.br"),
+                            ),
                           ),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 20, right: 20),
                           child: Form(
-                            key: _formKey,
+                            key: _formSenhaKey,
                             child: TextFormField(
+                              controller: _senhaController,
                               obscuringCharacter: '*',
                               obscureText: true,
                               decoration: decorarionPadrao("Senha", Icons.lock_outline, hint: "*********"),
                               validator: (value) {
-                                if (value!.isEmpty && value.length < 5) {
-                                  return 'Senha não atende aos requisitos';
-                                }
+                                if(!isSenha(value!)) return 'Senha deve ter ao menos um caractere especial, uma letra maiúscula e um número';
+
                               },
                             ),
                           ),
@@ -96,13 +136,15 @@ class _cadastroState extends State<cadastro> {
                         Padding(
                           padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
                           child: Form(
+                            key: _formConfirmaSenhaKey,
                             child: TextFormField(
+                              controller: _confirmaSenhaController,
                               obscuringCharacter: '*',
                               obscureText: true,
                               decoration: decorarionPadrao("Confrmar Senha", Icons.lock_outline, hint: "*********"),
                               validator: (value) {
-                                if (value!.isEmpty && value.length < 5) {
-                                  return 'Confirmar Senha não atende aos requisitos';
+                                if (value!.isEmpty || value != _senhaController.text) {
+                                  return 'Senhas não conferem.';
                                 }
                               },
                             ),
@@ -120,18 +162,15 @@ class _cadastroState extends State<cadastro> {
                               //     left: 120, right: 120, top: 20, bottom: 20),
                             ),
                             onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                // If the form is valid, display a snackbar. In the real world,
-                                // you'd often call a server or save the information in a database.
+                              if (_formNomeKey.currentState!.validate() &&
+                                  _formEmailKey.currentState!.validate() &&
+                                  _formSenhaKey.currentState!.validate() &&
+                                  _formConfirmaSenhaKey.currentState!.validate()) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text('Processando')),
                                 );
                               }
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => loginScreen()));
                             },
                             child: const Text(
                               'Confirmar',

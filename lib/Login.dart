@@ -48,8 +48,8 @@ class _loginState extends State<login> {
                   Text(
                     'Para continuar, efetue o login.',
                     style: GoogleFonts.roboto(
-                      textStyle: TextStyle(
-                          color: Colors.black.withOpacity(0.9),
+                      textStyle: const TextStyle(
+                          color: Colors.black,
                           fontWeight: FontWeight.w300,
                           // height: 1.5,
                           fontSize: 15),
@@ -67,15 +67,15 @@ class _loginState extends State<login> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(
-                              left: 20, right: 20, bottom: 20, top: 20),
+                          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 20),
                           child: TextFormField(
                             controller: _textEditingController,
                             onChanged: (val) {
                               setState(() {
-                              // isEmailCorrect = isEmail(val);
+                             //  isEmailCorrect = isEmail(val);
                               });
                             },
+
                             decoration: decorarionPadrao("Email", Icons.email_outlined, hint: "seu@email.com.br"),
                           ),
                         ),
@@ -125,8 +125,6 @@ class _loginState extends State<login> {
                                     BorderRadius.circular(10.0)),
                                 backgroundColor: Color(0xFF0086FF),
                                 padding: const EdgeInsets.symmetric( horizontal: 131, vertical: 20)
-                              // padding: EdgeInsets.only(
-                              //     left: 120, right: 120, top: 20, bottom: 20),
                             ),
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
