@@ -18,9 +18,8 @@ class _cadastroState extends State<cadastro> {
 
   double tamanhoErros = 0;
   double containerPrincipal = 380;
-
   double _forcaSenha = 0;
-
+  bool verSenha = false;
 
   @override
   void dispose() {
@@ -128,8 +127,35 @@ class _cadastroState extends State<cadastro> {
                               onChanged: (value) => _checarSenha(value),
                               controller: _senhaController,
                               obscuringCharacter: '*',
-                              obscureText: true,
-                              decoration: decorarionPadrao("Senha*", Icons.lock_outline, hint: "*********"),
+                              obscureText: !verSenha,
+                              decoration: decorarionPadrao("Senha*", Icons.lock_outline, hint: "*********",
+                                  suffix: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                                    mainAxisSize: MainAxisSize.min, // added line
+                                    children: <Widget>[
+                                      IconButton(
+                                          icon: Icon(!verSenha ? Icons.remove_red_eye_outlined : Icons.visibility_off_outlined, color: Color(0xFF0086FF)),
+                                          onPressed: () {
+                                            setState(() {
+                                              verSenha = !verSenha;
+                                            });
+                                          }),
+                                      Tooltip(
+                                        message: "Gerar Senha Aleatória",
+                                        child:IconButton(
+                                            icon: Icon(Icons.lock_reset, color: Color(0xFF0086FF)),
+                                            onPressed: () {
+                                              setState(() {
+                                                verSenha = true;
+                                                String senhaGerada = gerarSenha();
+                                                _senhaController.text = senhaGerada;
+                                                _confirmaSenhaController.text = senhaGerada;
+                                              });
+                                            })
+                                      ),
+                                    ],
+                                  ),
+                              ),
                               validator: (value) {
                                 if (!isSenha(value!)) return 'Pelo menos um caractere especial, uma letra maiúscula e um número';
                               },
@@ -154,7 +180,7 @@ class _cadastroState extends State<cadastro> {
                             child: TextFormField(
                               controller: _confirmaSenhaController,
                               obscuringCharacter: '*',
-                              obscureText: true,
+                              obscureText: !verSenha,
                               decoration: decorarionPadrao("Confirmar Senha*", Icons.lock_outline, hint: "*********"),
                               validator: (value) {
                                 if (value!.isEmpty || value != _senhaController.text) return 'Senhas não conferem.';

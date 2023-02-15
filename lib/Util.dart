@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +32,7 @@ String getSistemaOperacional({bool detalha = false}){
   }
 }
 
-InputDecoration decorarionPadrao(String label, IconData icone,  {String hint = ""}) {
+InputDecoration decorarionPadrao(String label, IconData icone,  {String hint = "", Widget? suffix}) {
  return InputDecoration(
     focusedBorder: const UnderlineInputBorder(
         borderSide: BorderSide.none,
@@ -46,6 +48,7 @@ InputDecoration decorarionPadrao(String label, IconData icone,  {String hint = "
     ),
     filled: true,
     fillColor: Colors.white,
+    suffixIcon: suffix,
     labelText: label,
     hintText: hint,
     labelStyle: const TextStyle(color: Color(0xFF0086FF)),
@@ -59,7 +62,28 @@ bool isEmail(String email) {
 }
 
 bool isSenha(String senha) {
-  String p = r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$*&@#])[0-9a-zA-Z$*&@#]{8,}$';
+  String p = r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$*&@#!()¨%])[0-9a-zA-Z$*&@#!()¨%]{8,}$';
   RegExp regExp = RegExp(p);
   return regExp.hasMatch(senha);
+}
+
+extension Shuffle on String {
+  String get shuffled => String.fromCharCodes(runes.toList()..shuffle());
+}
+
+String gerarSenha(){
+
+  const _charsMin = 'aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz';
+  const _charsMax = 'AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSSTTUUVVWWXXYYZZ';
+  const _numeros = '12345678901234567890123456789012345678901234567890';
+  const _esp = '*&@#!%*&@#!%*&@#!%*&@#!%*&@#!%*&@#!%';
+  Random _rnd = Random.secure();
+
+  String senha = (
+                   String.fromCharCodes(Iterable.generate(3, (_) => _charsMin.codeUnitAt(_rnd.nextInt(_charsMin.length)))) +
+                   String.fromCharCodes(Iterable.generate(3, (_) => _charsMax.codeUnitAt(_rnd.nextInt(_charsMax.length))))+
+                   String.fromCharCodes(Iterable.generate(3, (_) => _numeros.codeUnitAt(_rnd.nextInt(_numeros.length))))+
+                   String.fromCharCodes(Iterable.generate(3, (_) => _esp.codeUnitAt(_rnd.nextInt(_esp.length))))
+                 ).shuffled;
+  return senha;
 }
