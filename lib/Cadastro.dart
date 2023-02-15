@@ -150,6 +150,7 @@ class _cadastroState extends State<cadastro> {
                                                 String senhaGerada = gerarSenha();
                                                 _senhaController.text = senhaGerada;
                                                 _confirmaSenhaController.text = senhaGerada;
+                                                _forcaSenha = 1;
                                               });
                                             })
                                       ),
