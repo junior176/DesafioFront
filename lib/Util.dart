@@ -1,7 +1,15 @@
 import 'dart:math';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:localstore/localstore.dart';
+
+String servidor = "localhost:5001";
+
+final db = Localstore.instance;
+
+Uri getUri(String url){
+  return kIsWeb ? Uri.http(servidor,url) : Uri.https(servidor,url);
+}
 
 String getSistemaOperacional({bool detalha = false}){
 

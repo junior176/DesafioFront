@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:desafio_front/HomeLogado.dart';
 import 'package:desafio_front/Util.dart';
 import 'package:desafio_front/Login.dart';
 import 'package:desafio_front/Util/Alerta.dart';
@@ -6,23 +7,26 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
-class lembrarSenha extends StatefulWidget {
-  const lembrarSenha({Key? key}) : super(key: key);
+class validarCodigoLogin extends StatefulWidget {
+      validarCodigoLogin(this.email, this.token,{Key? key}) : super(key: key);
+
+  String token;
+  String email;
 
   @override
-  State<lembrarSenha> createState() => _lembrarSenhaState();
+  State<validarCodigoLogin> createState() => _validarCodigoLoginState();
 }
 
-class _lembrarSenhaState extends State<lembrarSenha> {
-  TextEditingController _textEditingController = TextEditingController();
+class _validarCodigoLoginState extends State<validarCodigoLogin> {
+  TextEditingController _codigoController = TextEditingController();
 
   @override
   void dispose() {
-    _textEditingController.clear();
+    _codigoController.clear();
     super.dispose();
   }
 
-  final _formEmailKey = GlobalKey<FormState>();
+  final _formCodigoKey = GlobalKey<FormState>();
   double containerPrincipal = 160;
 
   @override
@@ -48,7 +52,7 @@ class _lembrarSenhaState extends State<lembrarSenha> {
                     // width: 120,
                    ),
                   Text(
-                    'Insira seu email para recuperar a senha.',
+                    'Você receberá um código por email. Para continuar insira-o.',
                     style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                           color: Colors.black,
@@ -72,13 +76,19 @@ class _lembrarSenhaState extends State<lembrarSenha> {
                           padding: const EdgeInsets.only(
                               left: 20, right: 20, bottom: 20, top: 20),
                           child: Form(
-                            key: _formEmailKey,
+                            key: _formCodigoKey,
                               child:TextFormField(
-                              controller: _textEditingController,
-                              decoration: decorarionPadrao("Email", Icons.email_outlined, hint: "seu@email.com.br"),
+                              controller: _codigoController,
+                              onChanged: (val) {
+                                setState(() {
+                                // isEmailCorrect = isEmail(val);
+                                });
+                              },
+                              decoration: decorarionPadrao("Código", Icons.lock_outline, hint: "000000"),
                               validator: (value) {
-                                  if (value!.isEmpty)  return 'Campo obrigatório.';
-                                  if(!isEmail(value)) return 'Email inválido.';
+                                if (value!.isEmpty) {
+                                  if (value.isEmpty)  return 'Campo obrigatório.';
+                                }
                               },
                             )
                           ),
@@ -90,28 +100,39 @@ class _lembrarSenhaState extends State<lembrarSenha> {
                                     BorderRadius.circular(10.0)),
                                 backgroundColor: Color(0xFF0086FF),
                                 padding: const EdgeInsets.symmetric( horizontal: 131, vertical: 20)
+                              // padding: EdgeInsets.only(
+                              //     left: 120, right: 120, top: 20, bottom: 20),
                             ),
                             onPressed: () async {
+
                               setState(() {
-                                containerPrincipal = !_formEmailKey.currentState!.validate() ? 185 : 160;
+                                containerPrincipal = !_formCodigoKey.currentState!.validate() ? 185 : 160;
                               });
-                              if (_formEmailKey.currentState!.validate()) {
-                                var urlAPI = getUri( "/api/Usuario/RecuperarSenha");
+                              if (_formCodigoKey.currentState!.validate()) {
+                                var urlAPI = getUri( "/api/Login/ValidarCodigo");
                                 BotToast.showLoading();
                                 try {
                                   final response = await http.post(urlAPI,
+                                      headers: {
+                                        'Authorization': 'Bearer ${widget.token}',
+                                      },
                                       body: {
-                                        "Email": _textEditingController.text,
+                                        "Email": widget.email,
+                                        "Codigo": _codigoController.text,
                                       });
                                   switch (response.statusCode) {
                                     case 200:
-                                      Alerta.Sucesso(texto: "Foi enviado um email com as instruções para a recuperação de senha.");
-                                      Navigator.push(context,MaterialPageRoute(builder: (context) => login()));
+                                      db.collection('usuario').doc('LuizaLabs').set({
+                                        'token': widget.token,
+                                        'email': widget.email,
+                                        'nome' : response.body
+                                      });
+                                      Navigator.push(context,MaterialPageRoute(builder: (context) => homeLogado(response.body)));
                                       break;
 
                                     case 401:
                                     case 404:
-                                      Alerta.Erro("Email não encontrado.");
+                                      Alerta.Erro("Código inválido.");
                                       break;
 
                                     default:
@@ -134,7 +155,7 @@ class _lembrarSenhaState extends State<lembrarSenha> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Já tem uma conta?',
+                        'Não recebeu?',
                         style: TextStyle(
                           color: Colors.black.withOpacity(0.6),
                         ),
@@ -147,7 +168,7 @@ class _lembrarSenhaState extends State<lembrarSenha> {
                                   builder: (context) => login()));
                         },
                         child: const Text(
-                          'Entre',
+                          'Entre novamente',
                           style: TextStyle(
                               color: Color(0xFF0086FF),
                               fontWeight: FontWeight.w500),

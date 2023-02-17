@@ -1,7 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:desafio_front/AlterarSenha.dart';
-import 'package:desafio_front/HomeLogado.dart';
 import 'package:desafio_front/LembrarSenha.dart';
+import 'package:desafio_front/Login.dart';
 import 'package:desafio_front/Util.dart';
 import 'package:desafio_front/Cadastro.dart';
 import 'package:desafio_front/Util/Alerta.dart';
@@ -10,40 +9,35 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
-class login extends StatefulWidget {
-  const login({Key? key}) : super(key: key);
+class alterarSenha extends StatefulWidget {
+  alterarSenha(this.email,{Key? key}) : super(key: key);
 
+  String email;
   @override
-  State<login> createState() => _loginState();
+  State<alterarSenha> createState() => _alterarSenhaState();
 }
 
-class _loginState extends State<login> {
-  TextEditingController _emailController = TextEditingController();
+class _alterarSenhaState extends State<alterarSenha> {
   TextEditingController _senhaController = TextEditingController();
+  TextEditingController _confirmaSenhaController = TextEditingController();
 
   @override
   void dispose() {
-    _emailController.clear();
     _senhaController.clear();
+    _confirmaSenhaController.clear();
     super.dispose();
   }
 
-  final _formEmailKey = GlobalKey<FormState>();
   final _formSenhaKey = GlobalKey<FormState>();
+  final _formConfirmaSenhaKey = GlobalKey<FormState>();
   double tamanhoErros = 0;
   double containerPrincipal = 260;
+  double _forcaSenha = 0;
+  bool verSenha = false;
 
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('buscando');
-    db.collection('usuario').doc('LuizaLabs').get().then((value) {
-      if(value != null){
-        Navigator.push(context,MaterialPageRoute(builder: (context) => homeLogado(value['nome'].toString())));
-        debugPrint(value['token'].toString());
-        debugPrint(value['email'].toString());
-      }
-    });
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -65,27 +59,13 @@ class _loginState extends State<login> {
                     // width: 120,
                    ),
                   Text(
-                    'Para continuar, efetue o login.',
+                    'Insira a nova senha.',
                     style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w300,
                           // height: 1.5,
                           fontSize: 15),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      db.collection('usuario').doc('LuizaLabs').set({
-                        'token': '123456',
-                        'email': 'aaaaaa'
-                      });
-                    },
-                    child: const Text(
-                      'teste',
-                      style: TextStyle(
-                          color: Color(0xFF0086FF),
-                          fontWeight: FontWeight.w500),
                     ),
                   ),
                   const SizedBox(
@@ -99,63 +79,78 @@ class _loginState extends State<login> {
                         borderRadius: BorderRadius.circular(20)),
                     child: Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 20),
-                          child: Form(
-                              key: _formEmailKey,
-                              child:TextFormField(
-                            controller: _emailController,
-                            onChanged: (val) {
-                              setState(() {
-                             //  isEmailCorrect = isEmail(val);
-                              });
-                            },
-                            decoration: decorarionPadrao("Email", Icons.email_outlined, hint: "seu@email.com.br"),
-                            validator: (value) {
-                              if (value!.isEmpty)  return 'Campo obrigatório.';
-                              if(!isEmail(value)) return 'Email inválido.';
-                            },
-                          )
-                          ),
+                        const SizedBox(
+                          height: 30,
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 20, right: 20),
                           child: Form(
                             key: _formSenhaKey,
                             child: TextFormField(
+                              onChanged: (value) => _checarSenha(value),
                               controller: _senhaController,
                               obscuringCharacter: '*',
-                              obscureText: true,
-                              decoration: decorarionPadrao("Senha", Icons.lock_outline, hint: "*********"),
+                              obscureText: !verSenha,
+                              decoration: decorarionPadrao("Senha*", Icons.lock_outline, hint: "*********",
+                                suffix: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+                                  mainAxisSize: MainAxisSize.min, // added line
+                                  children: <Widget>[
+                                    IconButton(
+                                        icon: Icon(!verSenha ? Icons.remove_red_eye_outlined : Icons.visibility_off_outlined, color: Color(0xFF0086FF)),
+                                        onPressed: () {
+                                          setState(() {
+                                            verSenha = !verSenha;
+                                          });
+                                        }),
+                                    Tooltip(
+                                        message: "Gerar Senha Aleatória",
+                                        child:IconButton(
+                                            icon: Icon(Icons.lock_reset, color: Color(0xFF0086FF)),
+                                            onPressed: () {
+                                              setState(() {
+                                                verSenha = true;
+                                                String senhaGerada = gerarSenha();
+                                                _senhaController.text = senhaGerada;
+                                                _confirmaSenhaController.text = senhaGerada;
+                                                _forcaSenha = 1;
+                                              });
+                                            })
+                                    ),
+                                  ],
+                                ),
+                              ),
                               validator: (value) {
-                                if (value!.isEmpty) {
-                                  return 'Campo obrigatório.';
-                                }
+                                if (!isSenha(value!)) return 'Pelo menos um caractere especial, uma letra maiúscula e um número';
                               },
                             ),
                           ),
                         ),
                         Padding(
-                         padding: const EdgeInsets.fromLTRB(0, 0, 15, 0),
-                         child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => lembrarSenha()));
-                                },
-                                child: const Text(
-                                  'Esqueceu sua senha?',
-                                  style: TextStyle(
-                                      color: Color(0xFF0086FF),
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              )
-                            ],
-                          )
+                            padding: const EdgeInsets.only(left: 22, right: 22),
+                            child:LinearProgressIndicator(
+                              value: _forcaSenha,
+                              backgroundColor: Colors.grey[300],
+                              color: _forcaSenha <= 1 / 4 ? Colors.red : _forcaSenha == 2 / 4  ? Colors.yellow : _forcaSenha == 3 / 4 ? Colors.blue : Colors.green,
+                              minHeight: 5,
+                            )
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20,
+                              right: 20,
+                              top: 20),
+                          child: Form(
+                            key: _formConfirmaSenhaKey,
+                            child: TextFormField(
+                              controller: _confirmaSenhaController,
+                              obscuringCharacter: '*',
+                              obscureText: !verSenha,
+                              decoration: decorarionPadrao("Confirmar Senha*", Icons.lock_outline, hint: "*********"),
+                              validator: (value) {
+                                if (value!.isEmpty || value != _senhaController.text) return 'Senhas não conferem.';
+                              },
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
@@ -167,9 +162,8 @@ class _loginState extends State<login> {
                                 padding: const EdgeInsets.symmetric( horizontal: 131, vertical: 20)
                             ),
                             onPressed: () async {
-
                               tamanhoErros = 0;
-                              if(!_formEmailKey.currentState!.validate()) tamanhoErros += 22;
+                              if(!_formConfirmaSenhaKey.currentState!.validate()) tamanhoErros += 22;
                               if(!_formSenhaKey.currentState!.validate()) tamanhoErros += 22;
 
                               if(tamanhoErros > 0){
@@ -179,20 +173,20 @@ class _loginState extends State<login> {
                               }
 
                               if (_formSenhaKey.currentState!.validate() &&
-                                  _formEmailKey.currentState!.validate()
+                                  _formConfirmaSenhaKey.currentState!.validate()
                                  ) {
-                                var urlAPI = getUri( "/api/Login/Logar");
+                                var urlAPI = getUri( "/api/Usuario/AlterarSenha");
                                 BotToast.showLoading();
                                 try {
                                   final response = await http.post(urlAPI,
                                       body: {
-                                        "Email": _emailController.text,
+                                        "Email": widget.email,
                                         "Senha": _senhaController.text,
                                       });
                                   switch (response.statusCode) {
                                     case 200:
                                       String token = response.body;
-                                      Navigator.push(context,MaterialPageRoute(builder: (context) => validarCodigoLogin(_emailController.text, token)));
+                                      Navigator.push(context,MaterialPageRoute(builder: (context) => login()));
                                       break;
 
                                     case 401:
@@ -214,7 +208,7 @@ class _loginState extends State<login> {
                               }
                             },
                             child: const Text(
-                              'Entrar',
+                              'Confirmar',
                               style: TextStyle(fontSize: 17),
                             )),
                       ],
@@ -223,35 +217,15 @@ class _loginState extends State<login> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'Não tem uma conta?',
-                        style: TextStyle(
-                          color: Colors.black.withOpacity(0.6),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                           Navigator.push(
-                               context,
-                               MaterialPageRoute(
-                                   builder: (context) => cadastro()));
-                        },
-                        child: const Text(
-                          'Cadastre-se',
-                          style: TextStyle(
-                              color: Color(0xFF0086FF),
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
                       TextButton(
                         onPressed: () {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => alterarSenha('junior.176@outlook.com')));
+                                  builder: (context) => login()));
                         },
                         child: const Text(
-                          'teste',
+                          'Voltar',
                           style: TextStyle(
                               color: Color(0xFF0086FF),
                               fontWeight: FontWeight.w500),
@@ -266,5 +240,37 @@ class _loginState extends State<login> {
         ),
       ),
     );
+  }
+  void _checarSenha(String value) {
+    String senha = value.trim();
+    RegExp numReg = RegExp(r".*[0-9].*");
+    RegExp letrasReg = RegExp(r".*[A-Za-z].*");
+    RegExp totalReg = RegExp(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$*&@#])[0-9a-zA-Z$*&@#]{8,}$');
+
+    if (senha.isEmpty) {
+      setState(() {
+        _forcaSenha = 0;
+      });
+    } else if (senha.length < 6) {
+      setState(() {
+        _forcaSenha = 1 / 4;
+      });
+    } else if (!letrasReg.hasMatch(senha) || !numReg.hasMatch(senha)) {
+      setState(() {
+        _forcaSenha = 2 / 4;
+      });
+    } else {
+      if (!totalReg.hasMatch(senha)) {
+        setState(() {
+          _forcaSenha = 3 / 4;
+        });
+      } else {
+        // Senha >= 8
+        // Contém todas as validações
+        setState(() {
+          _forcaSenha = 1;
+        });
+      }
+    }
   }
 }

@@ -1,7 +1,10 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:desafio_front/Util.dart';
 import 'package:desafio_front/Login.dart';
+import 'package:desafio_front/Util/Alerta.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 
 class cadastro extends StatefulWidget {
   const cadastro({Key? key}) : super(key: key);
@@ -201,7 +204,7 @@ class _cadastroState extends State<cadastro> {
                               // padding: EdgeInsets.only(
                               //     left: 120, right: 120, top: 20, bottom: 20),
                             ),
-                            onPressed: () {
+                            onPressed: () async {
                               tamanhoErros = 0;
                               if (!_formNomeKey.currentState!.validate()) tamanhoErros += 22;
                               if (!_formEmailKey.currentState!.validate()) tamanhoErros += 22;
@@ -217,12 +220,34 @@ class _cadastroState extends State<cadastro> {
                               if (_formNomeKey.currentState!.validate() &&
                                   _formEmailKey.currentState!.validate() &&
                                   _formSenhaKey.currentState!.validate() &&
-                                  _formConfirmaSenhaKey.currentState!
-                                      .validate()) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Processando')),
-                                );
+                                  _formConfirmaSenhaKey.currentState!.validate()
+                                ) {
+                                BotToast.showLoading();
+                                var urlAPI = getUri( "/api/Usuario/Add");
+                                try {
+                                  final response = await http.post(urlAPI,
+                                      body: {
+                                        "Nome": _nomeController.text,
+                                        "Email": _emailController.text,
+                                        "Senha": _senhaController.text,
+                                      });
+                                  switch (response.statusCode) {
+                                    case 200:
+                                      Alerta.Sucesso(texto:"Usuário cadastrado com sucesso.\nVocê receberá um email para confirmar seu cadastro.");
+                                      Navigator.push(context,MaterialPageRoute(builder: (context) => login()));
+                                      break;
+
+                                    case 409:
+                                      Alerta.Erro("Email já cadastrado.");
+                                      break;
+
+                                    default:
+                                      Alerta.Erro(response.statusCode.toString());
+                                      break;
+                                  }
+                                }finally{
+                                  BotToast.closeAllLoading();
+                                }
                               }
                             },
                             child: const Text(
