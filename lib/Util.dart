@@ -1,14 +1,17 @@
 import 'dart:math';
+import 'package:bot_toast/bot_toast.dart';
+import 'package:desafio_front/Util/Alerta.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:localstore/localstore.dart';
+import 'package:http/http.dart' as http;
 
 String servidor = "localhost:5001";
 
 final db = Localstore.instance;
 
 Uri getUri(String url){
-  return kIsWeb ? Uri.http(servidor,url) : Uri.https(servidor,url);
+  return kIsWeb ? Uri.https(servidor,url) : Uri.https(servidor,url);
 }
 
 String getSistemaOperacional({bool detalha = false}){
@@ -94,4 +97,55 @@ String gerarSenha(){
                    String.fromCharCodes(Iterable.generate(3, (_) => _esp.codeUnitAt(_rnd.nextInt(_esp.length))))
                  ).shuffled;
   return senha;
+}
+
+Future<String> getEmailRecuperado(String codigo) async {
+  var urlAPI = getUri( "/api/Usuario/getEmailRecuperado");
+  BotToast.showLoading();
+  try {
+    final response = await http.post(urlAPI,
+        body: {
+          "Codigo": codigo,
+        });
+    switch (response.statusCode) {
+      case 200:
+        return response.body;
+
+      case 401:
+      case 404:
+       // Alerta.Erro("Código Inválido.");
+        return "";
+
+      default:
+        Alerta.Erro(response.statusCode.toString());
+        return "";
+    }
+  }finally{
+    BotToast.closeAllLoading();
+  }
+}
+
+Future<bool> ativarCadastro(String emailB64) async {
+  var urlAPI = getUri( "/api/Usuario/ConfirmarEmail");
+  BotToast.showLoading();
+  try {
+    final response = await http.post(urlAPI,
+        body: {
+          "EmailBase64": emailB64,
+        });
+    switch (response.statusCode) {
+      case 200:
+        return true;
+
+      case 401:
+      case 404:
+        return false;
+
+      default:
+        Alerta.Erro(response.statusCode.toString());
+        return false;
+    }
+  }finally{
+    BotToast.closeAllLoading();
+  }
 }

@@ -1,15 +1,19 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:desafio_front/Login.dart';
 import 'package:flutter/material.dart';
-import 'package:localstore/localstore.dart';
 
 void main() {
+  String? ativarConta = Uri.base.queryParameters["ativarConta"];
+  String? recuperarSenha = Uri.base.queryParameters["recuperarSenha"];
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  runApp(MyApp(ativarConta, recuperarSenha));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp(this.ativarConta, this.recuperarSenha,{super.key});
+
+  String? ativarConta;
+  String? recuperarSenha;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +24,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const login(),
+      home: login(ativarConta: ativarConta, recuperarSenha: recuperarSenha),
     );
   }
+
 }

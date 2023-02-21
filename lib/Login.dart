@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:desafio_front/AlterarSenha.dart';
+import 'package:desafio_front/ConfirmarEmail.dart';
 import 'package:desafio_front/HomeLogado.dart';
 import 'package:desafio_front/LembrarSenha.dart';
 import 'package:desafio_front/Util.dart';
@@ -11,7 +12,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
 class login extends StatefulWidget {
-  const login({Key? key}) : super(key: key);
+  login({Key? key, this.ativarConta, this.recuperarSenha}) : super(key: key);
+
+  String? ativarConta;
+  String? recuperarSenha;
 
   @override
   State<login> createState() => _loginState();
@@ -36,6 +40,17 @@ class _loginState extends State<login> {
 
   @override
   Widget build(BuildContext context) {
+
+    if(widget.recuperarSenha != null){
+      getEmailRecuperado(widget.recuperarSenha!).then((email){
+        if(email != "")  Navigator.push(context,MaterialPageRoute(builder: (context) => alterarSenha(email)));
+      });
+    }else if(widget.ativarConta != null){
+      ativarCadastro(widget.ativarConta!).then((ativado){
+        if(ativado)  Navigator.push(context,MaterialPageRoute(builder: (context) => confirmarEmail()));
+      });
+    }
+
     debugPrint('buscando');
     db.collection('usuario').doc('LuizaLabs').get().then((value) {
       if(value != null){
@@ -72,20 +87,6 @@ class _loginState extends State<login> {
                           fontWeight: FontWeight.w300,
                           // height: 1.5,
                           fontSize: 15),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      db.collection('usuario').doc('LuizaLabs').set({
-                        'token': '123456',
-                        'email': 'aaaaaa'
-                      });
-                    },
-                    child: const Text(
-                      'teste',
-                      style: TextStyle(
-                          color: Color(0xFF0086FF),
-                          fontWeight: FontWeight.w500),
                     ),
                   ),
                   const SizedBox(
@@ -243,20 +244,6 @@ class _loginState extends State<login> {
                               fontWeight: FontWeight.w500),
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => alterarSenha('junior.176@outlook.com')));
-                        },
-                        child: const Text(
-                          'teste',
-                          style: TextStyle(
-                              color: Color(0xFF0086FF),
-                              fontWeight: FontWeight.w500),
-                        ),
-                      )
                     ],
                   ),
                 ],

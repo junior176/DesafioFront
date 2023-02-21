@@ -7,9 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
 class confirmarEmail extends StatefulWidget {
-  confirmarEmail(this.email, {Key? key}) : super(key: key);
+  confirmarEmail({Key? key}) : super(key: key);
 
-  String email;
   @override
   State<confirmarEmail> createState() => _confirmarEmailState();
 }
