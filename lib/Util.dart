@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:localstore/localstore.dart';
 import 'package:http/http.dart' as http;
 
-String servidor = "localhost:5001";
+String servidor = "demonstracao.painelinformatica.com:7001";
 
 final db = Localstore.instance;
 

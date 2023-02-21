@@ -1,11 +1,18 @@
+import 'dart:io';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:desafio_front/Login.dart';
+import 'package:desafio_front/Util/Certificado.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   String? ativarConta = Uri.base.queryParameters["ativarConta"];
   String? recuperarSenha = Uri.base.queryParameters["recuperarSenha"];
   WidgetsFlutterBinding.ensureInitialized();
+  final context = SecurityContext.defaultContext;
+  context.allowLegacyUnsafeRenegotiation = true;
+  final httpClient = HttpClient(context: context);
+  HttpOverrides.global = new MyHttpOverrides();
   runApp(MyApp(ativarConta, recuperarSenha));
 }
 

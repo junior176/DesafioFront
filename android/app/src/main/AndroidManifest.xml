@@ -1,7 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="br.com.juvenal.luizalabs.desafio_front">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
    <application
-        android:label="desafio_front"
+        android:label="Desafio LuizaLabs"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
