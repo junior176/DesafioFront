@@ -1,10 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:desafio_front/LembrarSenha.dart';
 import 'package:desafio_front/Login.dart';
 import 'package:desafio_front/Util.dart';
-import 'package:desafio_front/Cadastro.dart';
 import 'package:desafio_front/Util/Alerta.dart';
-import 'package:desafio_front/ValidarCodigoLogin.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
